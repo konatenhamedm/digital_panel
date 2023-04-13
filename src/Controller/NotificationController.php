@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Notification;
+use App\Entity\UserNotification;
 use App\Form\NotificationType;
 use App\Repository\NotificationRepository;
+use App\Repository\UserNotificationRepository;
 use App\Repository\UserRepository;
 use App\Service\ActionRender;
 use App\Service\FormError;
@@ -111,7 +113,7 @@ class NotificationController extends AbstractController
     }
 
     #[Route('/new', name: 'app_notification_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, NotificationRepository $notificationRepository,UserRepository $repository,FormError $formError): Response
+    public function new(Request $request, NotificationRepository $notificationRepository,UserNotificationRepository $userNotificationRepository, UserRepository $repository,FormError $formError): Response
     {
         $notification = new Notification();
         $form = $this->createForm(NotificationType::class, $notification, [
@@ -135,15 +137,18 @@ class NotificationController extends AbstractController
 
             if ($form->isValid()) {
 
+                $notification = new Notification();
+                $notification->setTitre($form->getData()->getTitre());
+                $notification->setContent($form->getData()->getContent());
+                $notification->setDateCreation(new \DateTime()) ;
+                $notificationRepository->save($notification, true);
 
                 foreach ($users as $ele) {
-                    $notificationUser = new Notification();
-                    $notificationUser->setUser($ele);
-                    $notificationUser->setTitre($form->getData()->getTitre());
-                    $notificationUser->setContent($form->getData()->getContent());
+                    $notificationUser = new UserNotification();
                     $notificationUser->setEtat(false) ;
-                    $notificationUser->setDateCreation(new \DateTime()) ;
-                    $notificationRepository->save($notificationUser, true);
+                    $notificationUser->setNotification($notification) ;
+                    $notificationUser->setUser($ele) ;
+                    $userNotificationRepository->save($notificationUser, true);
                 }
 
 

@@ -10,6 +10,7 @@ use App\Repository\AbonneRepository;
 use App\Repository\FavorieRepository;
 use App\Repository\NotificationRepository;
 use App\Repository\PostRepository;
+use App\Repository\UserNotificationRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -48,19 +49,19 @@ class ApiController extends AbstractController
     }
 
     #[Route('/api/notification/{id}/liste', name: 'app_notification',methods: 'GET')]
-    public function index($id,NotificationRepository $repository): Response
+    public function index($id,UserNotificationRepository $repository): Response
     {
         $notifications = $repository->findNotificationByUser($id);
-
+        //dd($notifications);
         $data = [];
 
         foreach ($notifications as $notification) {
             $data[] = [
-                'id' => $notification->getId(),
-                'titre' => $notification->getTitre(),
-                'content' => $notification->getContent(),
-                'etat' => $notification->isEtat(),
-                'dateCreation' => $notification->getDateCreation(),
+                'id' => $notification['id'],
+                'titre' => $notification['titre'],
+                'content' => $notification['content'],
+                'etat' => $notification['etat'],
+                'dateCreation' => $notification['dateCreation'],
             ];
         }
 
@@ -74,6 +75,52 @@ class ApiController extends AbstractController
        // $this->respond($data);
     }
 
+    #[Route('/api/notification/{id}/delete', name: 'app_notification_delete', methods: ['DELETE'])]
+    public function deleteNotification($id,UserNotificationRepository $Repository): Response
+    {
+
+        $notification = $Repository->find($id);
+
+        if (!$notification) {
+            $data = [
+                'message'=>"Il n y a aucune enregistrement",
+                'codeStatut'=>400,
+            ];
+            return $this->json($data);
+        }
+
+        $Repository->remove($notification,true);
+
+        $data = [
+            'message'=>"Suppression éffectué avec success",
+            'codeStatut'=>200,
+        ];
+        return $this->json($data);
+    }
+
+    #[Route('/api/notification/{id}/changeStatus', name: 'app_notification_changeStatus', methods: ['GET', 'POST'])]
+    public function deleteNotificationChangeStatus($id,UserNotificationRepository $Repository): Response
+    {
+
+        $notification = $Repository->find($id);
+
+        if (!$notification) {
+            $data = [
+                'message'=>"Il n y a aucune enregistrement",
+                'codeStatut'=>400,
+            ];
+            return $this->json($data);
+        }
+
+        $notification->setEtat(true);
+        $Repository->save($notification,true);
+
+        $data = [
+            'message'=>"Modification éffectué avec success",
+            'codeStatut'=>200,
+        ];
+        return $this->json($data);
+    }
 
     #[Route('/api/abonne/create', name: 'app_create', methods: ['GET', 'POST'])]
     public function Abonnement(Request $request,AbonneRepository $abonneRepository):Response

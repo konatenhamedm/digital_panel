@@ -19,16 +19,15 @@ class User
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Favorie::class)]
     private Collection $favories;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Notification::class)]
-    private Collection $notifications;
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserNotification::class)]
+    private Collection $userNotifications;
 
 
 
     public function __construct()
     {
         $this->favories = new ArrayCollection();
-        $this->notifications = new ArrayCollection();
-
+        $this->userNotifications = new ArrayCollection();
 
     }
 
@@ -68,36 +67,33 @@ class User
     }
 
     /**
-     * @return Collection<int, Notification>
+     * @return Collection<int, UserNotification>
      */
-    public function getNotifications(): Collection
+    public function getUserNotifications(): Collection
     {
-        return $this->notifications;
+        return $this->userNotifications;
     }
 
-    public function addNotification(Notification $notification): self
+    public function addUserNotification(UserNotification $userNotification): self
     {
-        if (!$this->notifications->contains($notification)) {
-            $this->notifications->add($notification);
-            $notification->setUser($this);
+        if (!$this->userNotifications->contains($userNotification)) {
+            $this->userNotifications->add($userNotification);
+            $userNotification->setUser($this);
         }
 
         return $this;
     }
 
-    public function removeNotification(Notification $notification): self
+    public function removeUserNotification(UserNotification $userNotification): self
     {
-        if ($this->notifications->removeElement($notification)) {
+        if ($this->userNotifications->removeElement($userNotification)) {
             // set the owning side to null (unless already changed)
-            if ($notification->getUser() === $this) {
-                $notification->setUser(null);
+            if ($userNotification->getUser() === $this) {
+                $userNotification->setUser(null);
             }
         }
 
         return $this;
     }
-
-
-
 
 }

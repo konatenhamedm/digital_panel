@@ -22,20 +22,18 @@ class Notification
     #[ORM\Column(length: 255)]
     private ?string $content = null;
 
-    #[ORM\Column]
-    private ?bool $etat = null;
-
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $dateCreation = null;
 
-    #[ORM\ManyToOne(inversedBy: 'notifications')]
-    private ?User $user = null;
+    #[ORM\OneToMany(mappedBy: 'notification', targetEntity: UserNotification::class)]
+    private Collection $userNotifications;
 
     public function __construct()
     {
-
+        $this->userNotifications = new ArrayCollection();
     }
+
     public function getDateCreation(): ?\DateTimeInterface
     {
         return $this->dateCreation;
@@ -76,30 +74,34 @@ class Notification
         return $this;
     }
 
-    public function isEtat(): ?bool
+    /**
+     * @return Collection<int, UserNotification>
+     */
+    public function getUserNotifications(): Collection
     {
-        return $this->etat;
+        return $this->userNotifications;
     }
 
-    public function setEtat(bool $etat): self
+    public function addUserNotification(UserNotification $userNotification): self
     {
-        $this->etat = $etat;
+        if (!$this->userNotifications->contains($userNotification)) {
+            $this->userNotifications->add($userNotification);
+            $userNotification->setNotification($this);
+        }
 
         return $this;
     }
 
-    public function getUser(): ?User
+    public function removeUserNotification(UserNotification $userNotification): self
     {
-        return $this->user;
-    }
-
-    public function setUser(?User $user): self
-    {
-        $this->user = $user;
+        if ($this->userNotifications->removeElement($userNotification)) {
+            // set the owning side to null (unless already changed)
+            if ($userNotification->getNotification() === $this) {
+                $userNotification->setNotification(null);
+            }
+        }
 
         return $this;
     }
-
-
 
 }
