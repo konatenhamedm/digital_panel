@@ -106,6 +106,7 @@ class ApiController extends AbstractController
 
         if (!$notification) {
             $data = [
+                'data'=>[],
                 'message'=>"Il n y a aucune enregistrement",
                 'codeStatut'=>400,
             ];
@@ -116,6 +117,7 @@ class ApiController extends AbstractController
         $Repository->save($notification,true);
 
         $data = [
+            'data'=>$notification,
             'message'=>"Modification éffectué avec success",
             'codeStatut'=>200,
         ];
